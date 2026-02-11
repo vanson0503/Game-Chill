@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Zen Catch - Hứng Sao Cùng Bạn Bề</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="theme.css">
+    <style>
+        body {
+            overflow: hidden;
+            margin: 0;
+            background: #0a0a14;
+            color: white;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        canvas {
+            display: block;
+        }
+
+        #ui {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 100;
+            pointer-events: none;
+        }
+
+        .score {
+            font-size: 2rem;
+            font-weight: 600;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .hint {
+            font-size: 1rem;
+            opacity: 0.7;
+        }
+
+        .back-link {
+            position: fixed;
+            top: 20px;
+            right: 80px;
+            color: white;
+            text-decoration: none;
+            z-index: 100;
+            font-weight: 600;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="ui">
+        <div class="score">Điểm thu thập: <span id="score-val">0</span></div>
+        <div class="hint">Di chuyển chuột để hứng những vì sao đang rơi! ✨</div>
+    </div>
+    <a href="/" class="back-link">← Quay lại</a>
+    <div id="theme-btn" onclick="toggleTheme()">🌙 Zen Mode</div>
+    <canvas id="gameCanvas"></canvas>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="theme.js"></script>
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const scoreVal = document.getElementById('score-val');
+        const socket = io('/catch');
+
+        let items = [];
+        let score = 0;
+        let mouse = { x: 0, y: 0 };
+
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        window.addEventListener('mousemove', (e) => {
+            mouse.x = e.clientX;
+            mouse.y = e.clientY;
+        });
+
+        socket.on('init', (data) => {
+            score = data.score;
+            items = data.items;
+            scoreVal.innerText = score;
+        });
+
+        socket.on('update', (data) => {
+            items = data;
+            checkCollision();
+        });
+
+        socket.on('caught', (data) => {
+            score = data.score;
+            scoreVal.innerText = score;
+        });
+
+        function checkCollision() {
+            items.forEach(item => {
+                const ix = (item.x / 100) * canvas.width;
+                const iy = (item.y / 100) * canvas.height;
+                const dist = Math.sqrt((mouse.x - ix) ** 2 + (mouse.y - iy) ** 2);
+                if (dist < 50) {
+                    socket.emit('catch', item.id);
+                }
+            });
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const isCute = document.body.classList.contains('cute-mode');
+
+            // Draw Collector (Mouse)
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(mouse.x, mouse.y, 40, 0, Math.PI * 2);
+            if (isCute) {
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+                ctx.strokeStyle = '#ff69b4';
+                ctx.lineWidth = 4;
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = '#ff69b4';
+            } else {
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+                ctx.lineWidth = 2;
+            }
+            ctx.fill();
+            ctx.stroke();
+            ctx.restore();
+
+            items.forEach(item => {
+                const ix = (item.x / 100) * canvas.width;
+                const iy = (item.y / 100) * canvas.height;
+
+                ctx.save();
+                ctx.beginPath();
+                if (item.type === 'gold') {
+                    ctx.arc(ix, iy, 15, 0, Math.PI * 2);
+                    ctx.fillStyle = isCute ? '#ff1493' : '#ffd700';
+                    ctx.shadowBlur = 20;
+                    ctx.shadowColor = isCute ? '#ff1493' : 'gold';
+                } else {
+                    ctx.arc(ix, iy, 10, 0, Math.PI * 2);
+                    ctx.fillStyle = isCute ? '#ffb6c1' : '#fff';
+                    ctx.shadowBlur = 10;
+                    ctx.shadowColor = isCute ? '#ffb6c1' : 'white';
+                }
+                ctx.fill();
+                ctx.restore();
+            });
+
+            requestAnimationFrame(draw);
+        }
+
+        draw();
+    </script>
+</body>
+
+</html>

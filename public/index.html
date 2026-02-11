@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zen Arcade - Trò Chơi Thư Giãn</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background: radial-gradient(circle at center, #1a1a2e 0%, #0a0a14 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            min-height: 100vh;
+            padding: 80px 20px;
+            text-align: center;
+            overflow-y: auto !important;
+        }
+
+        .container {
+            max-width: 1000px;
+            padding: 20px;
+        }
+
+        .header {
+            margin-bottom: 60px;
+        }
+
+        .header h1 {
+            font-size: 4rem;
+            margin-bottom: 10px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 30px;
+            padding: 40px;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            text-decoration: none;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .card:hover {
+            transform: translateY(-15px);
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.3);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        .card .icon {
+            font-size: 50px;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #ddf 0%, #77a 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .card h3 {
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+        }
+
+        .card p {
+            opacity: 0.6;
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+
+        /* Mobile Responsiveness */
+        @media (max-width: 768px) {
+            body {
+                padding: 40px 15px;
+            }
+
+            .header h1 {
+                font-size: 2.5rem;
+            }
+
+            .grid {
+                grid-template-columns: 1fr;
+                /* Stack cards on mobile */
+                gap: 20px;
+            }
+
+            .card {
+                padding: 25px;
+                border-radius: 20px;
+            }
+
+            .card .icon {
+                font-size: 40px;
+            }
+
+            .card h3 {
+                font-size: 1.4rem;
+            }
+
+            #theme-btn {
+                top: 10px;
+                right: 10px;
+                padding: 8px 15px;
+                font-size: 0.8rem;
+            }
+
+            #rate-btn {
+                bottom: 20px;
+                right: 20px;
+                width: 50px;
+                height: 50px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="theme-btn" onclick="toggleTheme()">🌙 Zen Mode</div>
+    <canvas id="bgCanvas"
+        style="position: fixed; top:0; left:0; width:100%; height:100%; z-index:-1; pointer-events: none;"></canvas>
+    <div class="container">
+        <div class="header">
+            <h1>Zen Arcade</h1>
+            <p>Chọn một không gian để thả mình vào sự thư giãn</p>
+        </div>
+        <div class="grid">
+            <a href="/zen-space" class="card">
+                <div class="icon">✨</div>
+                <h3>Zen Space</h3>
+                <p>Khám phá không gian vô tận. Chạm để tỏa sáng và kết nối với những linh hồn khác.</p>
+            </a>
+            <a href="/star-connect" class="card">
+                <div class="icon">🌌</div>
+                <h3>Star Connect</h3>
+                <p>Cùng nhau dệt nên những chòm sao. Mỗi điểm chạm là một vì sao mới trên bầu trời chung.</p>
+            </a>
+            <a href="/zen-ripples" class="card">
+                <div class="icon">💧</div>
+                <h3>Zen Ripples</h3>
+                <p>Tạo ra những làn sóng bình yên trên mặt hồ tĩnh lặng. Cảm nhận sự lan tỏa của sự thư thái.</p>
+            </a>
+            <a href="/zen-paint" class="card">
+                <div class="icon">🎨</div>
+                <h3>Zen Paint</h3>
+                <p>Vẽ nên những kiệt tác ánh sáng. Mọi người cùng chung tay tô điểm cho bức tranh vô hình.</p>
+            </a>
+            <a href="/zen-blocks" class="card">
+                <div class="icon">🧊</div>
+                <h3>Zen Blocks</h3>
+                <p>Sắp xếp những khối băng kỳ diệu. Cùng nhau xây dựng và di chuyển những cấu trúc không trọng lực.</p>
+            </a>
+            <a href="/zen-petals" class="card">
+                <div class="icon">🌸</div>
+                <h3>Zen Petals</h3>
+                <p>Thả mình vào cơn mưa hoa. Điều khiển những cánh hoa bay lượn trong gió cùng mọi người.</p>
+            </a>
+            <a href="/zen-blast" class="card">
+                <div class="icon">⊞</div>
+                <h3>Zen Blast</h3>
+                <p>Cùng nhau lấp đầy bảng bằng những khối màu. Phối hợp để xóa các hàng và ghi điểm cao.</p>
+            </a>
+            <a href="/zen-riddle" class="card">
+                <div class="icon">💡</div>
+                <h3>Zen Riddle</h3>
+                <p>Thử thách trí tuệ với 1000 câu đố mẹo. Cùng nhau thảo luận để tìm ra lời giải đáp.</p>
+            </a>
+            <a href="/zen-snake" class="card">
+                <div class="icon">🐍</div>
+                <h3>Zen Snake</h3>
+                <p>Rắn săn mồi đa người chơi. Ăn mồi, đặt tên và cùng nhau leo lên bảng xếp hạng điểm số.</p>
+            </a>
+            <a href="/zen-pop" class="card">
+                <div class="icon">🎈</div>
+                <h3>Zen Pop</h3>
+                <p>Bóp bóng thư giãn. Cùng bạn bè tạo nên những tiếng nổ vui tai và ghi điểm chung.</p>
+            </a>
+            <a href="/zen-catch" class="card">
+                <div class="icon">✨</div>
+                <h3>Zen Catch</h3>
+                <p>Hứng sao trời. Phối hợp nhịp nhàng để thu thập những vì sao tinh tú đang rơi.</p>
+            </a>
+            <a href="/zen-soccer" class="card">
+                <div class="icon">⚽</div>
+                <h3>Zen Soccer</h3>
+                <p>Bóng đá tối giản. Cùng nhau dẫn bóng và ghi những bàn thắng đẹp mắt vào gôn.</p>
+            </a>
+            <a href="/zen-fishing" class="card">
+                <div class="icon">🎣</div>
+                <h3>Zen Fishing</h3>
+                <p>Câu cá thư giãn. Mỗi người một cần, cùng nhau xây dựng kho cá khổng lồ.</p>
+            </a>
+            <a href="/zen-garden" class="card">
+                <div class="icon">🌿</div>
+                <h3>Zen Garden</h3>
+                <p>Khu vườn chung. Gieo hạt và tưới nước để cùng nhau tạo ra cánh đồng hoa rực rỡ.</p>
+            </a>
+            <a href="/zen-clouds" class="card">
+                <div class="icon">☁️</div>
+                <h3>Zen Clouds</h3>
+                <p>Dạo bước trên mây. Phiêu du giữa bầu trời xanh cùng những người bạn đồng hành.</p>
+            </a>
+        </div>
+
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const canvas = document.getElementById('bgCanvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+        let mouse = { x: null, y: null };
+
+        function init() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            particles = [];
+            for (let i = 0; i < 100; i++) {
+                particles.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    vx: (Math.random() - 0.5) * 0.1,
+                    vy: (Math.random() - 0.5) * 0.1,
+                    size: Math.random() * 5 + 2, // Larger stars (2px to 7px)
+                    opacity: Math.random(),
+                    fadeSpeed: 0.005 + Math.random() * 0.01,
+                    angle: Math.random() * Math.PI * 2,
+                    rotationSpeed: (Math.random() - 0.5) * 0.01
+                });
+            }
+        }
+
+
+
+        function drawHeart(ctx, x, y, size) {
+            ctx.save();
+            ctx.translate(-size / 2, -size / 2);
+            ctx.beginPath();
+            ctx.moveTo(size / 2, size / 5);
+            ctx.bezierCurveTo(size / 4, 0, 0, size / 4, 0, size / 2);
+            ctx.bezierCurveTo(0, size * 0.8, size / 2, size, size / 2, size);
+            ctx.bezierCurveTo(size / 2, size, size, size * 0.8, size, size / 2);
+            ctx.bezierCurveTo(size, size / 4, size * 0.75, 0, size / 2, size / 5);
+            ctx.fill();
+            ctx.restore();
+        }
+
+
+        function drawStar(ctx, cx, cy, spikes, outerRadius, innerRadius) {
+            let rot = Math.PI / 2 * 3;
+            let x = cx;
+            let y = cy;
+            let step = Math.PI / spikes;
+
+            ctx.beginPath();
+            ctx.moveTo(cx, cy - outerRadius);
+            for (let i = 0; i < spikes; i++) {
+                x = cx + Math.cos(rot) * outerRadius;
+                y = cy + Math.sin(rot) * outerRadius;
+                ctx.lineTo(x, y);
+                rot += step;
+
+                x = cx + Math.cos(rot) * innerRadius;
+                y = cy + Math.sin(rot) * innerRadius;
+                ctx.lineTo(x, y);
+                rot += step;
+            }
+            ctx.lineTo(cx, cy - outerRadius);
+            ctx.closePath();
+            ctx.fill();
+        }
+
+        window.addEventListener('resize', () => {
+            init();
+
+        });
+
+        window.addEventListener('mousemove', (e) => {
+            mouse.x = e.clientX;
+            mouse.y = e.clientY;
+        });
+
+        function animate() {
+            // Clear screen
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+
+
+            particles.forEach(p => {
+                p.x += p.vx;
+                p.y += p.vy;
+                p.angle += p.rotationSpeed;
+
+                // Twinkle effect
+                p.opacity += p.fadeSpeed;
+                if (p.opacity > 1 || p.opacity < 0.2) p.fadeSpeed *= -1;
+
+                if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
+                if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
+
+                // Mouse interaction (Stars float away gently)
+                if (mouse.x) {
+                    const dx = mouse.x - p.x;
+                    const dy = mouse.y - p.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist < 150) {
+                        p.x -= dx * 0.02;
+                        p.y -= dy * 0.02;
+                    }
+                }
+
+                const isCute = document.body.classList.contains('cute-mode');
+                ctx.save();
+                ctx.translate(p.x, p.y);
+                ctx.rotate(p.angle);
+
+                if (isCute) {
+                    ctx.fillStyle = `rgba(255, 192, 203, ${Math.abs(p.opacity) * 0.6})`; // Deep pink/rose
+                    ctx.shadowBlur = p.size;
+                    ctx.shadowColor = "#ffc0cb";
+                    drawHeart(ctx, 0, 0, p.size * 4);
+                } else {
+                    ctx.fillStyle = `rgba(255, 255, 255, ${Math.abs(p.opacity)})`;
+                    ctx.shadowBlur = p.size * 2;
+                    ctx.shadowColor = "white";
+                    drawStar(ctx, 0, 0, 4, p.size, p.size / 2.5);
+                }
+
+                ctx.restore();
+            });
+            requestAnimationFrame(animate);
+        }
+
+        init();
+        animate();
+
+        // 3D Tilt for cards
+        document.querySelectorAll('.card').forEach(card => {
+            card.addEventListener('mousemove', (e) => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                const xc = rect.width / 2;
+                const yc = rect.height / 2;
+                const dx = x - xc;
+                const dy = y - yc;
+                card.style.transform = `perspective(1000px) rotateY(${dx / 15}deg) rotateX(${-dy / 15}deg) translateY(-10px)`;
+            });
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = '';
+            });
+        });
+    </script>
+    <!-- Rating UI -->
+    <style>
+        #rate-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: linear-gradient(135deg, #6e8efb, #a777e3);
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s;
+            z-index: 1000;
+        }
+
+        #rate-btn:hover {
+            transform: scale(1.1) rotate(10deg);
+        }
+
+        #rate-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 2000;
+            backdrop-filter: blur(5px);
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: #1a1a2e;
+            width: 90%;
+            max-width: 500px;
+            border-radius: 20px;
+            padding: 30px;
+            position: relative;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            max-height: 80vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 24px;
+            cursor: pointer;
+            color: #aaa;
+        }
+
+        .stars {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+            justify-content: center;
+        }
+
+        .star {
+            font-size: 30px;
+            cursor: pointer;
+            color: #444;
+            transition: color 0.2s;
+        }
+
+        .star.active {
+            color: #ffd700;
+        }
+
+        input,
+        textarea {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            font-family: inherit;
+        }
+
+        #submit-review {
+            background: linear-gradient(90deg, #6e8efb, #a777e3);
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        #reviews-list {
+            margin-top: 20px;
+            overflow-y: auto;
+            flex-grow: 1;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 20px;
+        }
+
+        /* Custom Scrollbar for reviews */
+        #reviews-list::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        #reviews-list::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
+        }
+
+        .review-item {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            text-align: left;
+        }
+
+        .review-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 0.9em;
+            opacity: 0.8;
+        }
+
+        .review-stars {
+            color: #ffd700;
+            letter-spacing: 2px;
+        }
+    </style>
+
+    <div id="rate-btn">⭐</div>
+
+    <div id="rate-modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="toggleModal(false)">&times;</span>
+            <h2 style="margin-bottom: 20px;">Đánh Giá Zen Arcade</h2>
+
+            <div class="stars" id="star-container">
+                <span class="star" data-val="1">★</span>
+                <span class="star" data-val="2">★</span>
+                <span class="star" data-val="3">★</span>
+                <span class="star" data-val="4">★</span>
+                <span class="star" data-val="5">★</span>
+            </div>
+
+            <input type="text" id="review-name" placeholder="Tên của bạn (Tùy chọn)">
+            <textarea id="review-text" rows="3" placeholder="Chia sẻ cảm nghĩ của bạn..."></textarea>
+            <button id="submit-review">Gửi Đánh Giá</button>
+
+            <h3 style="margin: 20px 0 10px; text-align: left;">Cộng đồng đánh giá</h3>
+            <div id="reviews-list">Đang tải...</div>
+        </div>
+    </div>
+
+    <script>
+        const rateModal = document.getElementById('rate-modal');
+        const starContainer = document.getElementById('star-container');
+        const stars = starContainer.querySelectorAll('.star');
+        let currentRating = 0;
+
+        document.getElementById('rate-btn').onclick = () => {
+            toggleModal(true);
+            loadReviews();
+        };
+
+        function toggleModal(show) {
+            rateModal.style.display = show ? 'flex' : 'none';
+        }
+
+        // Star logic
+        stars.forEach(star => {
+            star.onclick = () => {
+                currentRating = parseInt(star.dataset.val);
+                updateStars(currentRating);
+            };
+        });
+
+        function updateStars(val) {
+            stars.forEach(s => {
+                s.classList.toggle('active', parseInt(s.dataset.val) <= val);
+            });
+        }
+
+        // Submit review
+        document.getElementById('submit-review').onclick = async () => {
+            const name = document.getElementById('review-name').value;
+            const text = document.getElementById('review-text').value;
+
+            if (!currentRating || !text) {
+                alert("Vui lòng chọn số sao và nhập nội dung!");
+                return;
+            }
+
+            try {
+                const res = await fetch('/api/reviews', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, rating: currentRating, text })
+                });
+
+                if (res.ok) {
+                    // Reset Form
+                    document.getElementById('review-text').value = '';
+                    document.getElementById('review-name').value = ''; // Optional reset name too
+                    currentRating = 0;
+                    updateStars(0);
+
+                    // Reload and Scroll to top
+                    await loadReviews();
+                    const list = document.getElementById('reviews-list');
+                    list.scrollTop = 0;
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        };
+
+        // Load reviews
+        async function loadReviews() {
+            try {
+                const res = await fetch('/api/reviews');
+                const reviews = await res.json();
+                const list = document.getElementById('reviews-list');
+
+                if (reviews.length === 0) {
+                    list.innerHTML = '<p style="opacity:0.5">Chưa có đánh giá nào.</p>';
+                    return;
+                }
+
+                list.innerHTML = reviews.map(r => `
+                    <div class="review-item">
+                        <div class="review-header">
+                            <strong>${r.name}</strong>
+                            <span class="review-stars">${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}</span>
+                        </div>
+                        <p>${r.text}</p>
+                    </div>
+                `).join('');
+            } catch (err) {
+                console.error(err);
+                document.getElementById('reviews-list').innerHTML = '<p style="color: #ff6b6b">Lỗi tải dữ liệu. Vui lòng thử lại sau.</p>';
+            }
+        }
+
+        // Close when clicking outside
+        rateModal.onclick = (e) => {
+            if (e.target === rateModal) toggleModal(false);
+        }
+    </script>
+    <!-- Theme Toggle Logic -->
+    <link rel="stylesheet" href="theme.css">
+    <script src="theme.js"></script>
+</body>
+
+</html>

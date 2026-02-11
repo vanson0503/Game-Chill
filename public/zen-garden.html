@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Zen Garden - Khu Vườn Chung</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="theme.css">
+    <style>
+        body {
+            margin: 0;
+            background: #1b4d3e;
+            color: white;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        #garden {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            cursor: crosshair;
+            overflow: hidden;
+            background: linear-gradient(to bottom, #2d5a27, #1b4d3e);
+        }
+
+        .plant {
+            position: absolute;
+            transform: translate(-50%, -100%);
+            transition: all 1s;
+        }
+
+        #ui {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            pointer-events: none;
+        }
+
+        .back-link {
+            position: fixed;
+            top: 20px;
+            right: 80px;
+            color: white;
+            text-decoration: none;
+            z-index: 100;
+            font-weight: 600;
+        }
+
+        .controls {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+            background: rgba(0, 0, 0, 0.4);
+            padding: 15px 30px;
+            border-radius: 40px;
+        }
+
+        .seed {
+            font-size: 2rem;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .seed:hover {
+            transform: scale(1.2);
+        }
+    </style>
+</head>
+
+<body>
+    <div id="garden">
+        <div id="ui">
+            <h1 style="margin:0;">Zen Garden</h1>
+            <p>Chọn hạt giống và chạm vào đất để trồng hoa cùng mọi người 🌸</p>
+        </div>
+        <a href="/" class="back-link">← Quay lại</a>
+        <div id="theme-btn" onclick="toggleTheme()">🌙 Zen Mode</div>
+
+        <div class="controls">
+            <div class="seed" onclick="selectSeed('🌸')">🌸</div>
+            <div class="seed" onclick="selectSeed('🌻')">🌻</div>
+            <div class="seed" onclick="selectSeed('🌷')">🌷</div>
+            <div class="seed" onclick="selectSeed('🍀')">🍀</div>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="theme.js"></script>
+    <script>
+        const socket = io('/garden');
+        let selectedSeed = '🌸';
+        const garden = document.getElementById('garden');
+
+        function selectSeed(s) { selectedSeed = s; }
+
+        garden.onclick = (e) => {
+            if (e.target === garden) {
+                socket.emit('plant', { x: e.clientX, y: e.clientY, type: selectedSeed });
+            }
+        };
+
+        socket.on('init', (plants) => {
+            plants.forEach(renderPlant);
+        });
+
+        socket.on('newPlant', renderPlant);
+        socket.on('updatePlant', (p) => {
+            const el = document.getElementById('p-' + p.id);
+            if (el) {
+                el.style.fontSize = (20 + p.growth * 60) + 'px';
+                el.style.opacity = 0.5 + p.growth * 0.5;
+            }
+        });
+
+        function renderPlant(p) {
+            const div = document.createElement('div');
+            div.id = 'p-' + p.id;
+            div.className = 'plant';
+            div.style.left = p.x + 'px';
+            div.style.top = p.y + 'px';
+            div.style.fontSize = (20 + p.growth * 60) + 'px';
+            div.innerText = p.type;
+            div.onclick = (e) => {
+                e.stopPropagation();
+                socket.emit('water', p.id);
+            };
+            garden.appendChild(div);
+        }
+    </script>
+</body>
+
+</html>

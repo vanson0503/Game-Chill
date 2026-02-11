@@ -1,0 +1,194 @@
+/* Base Theme Button Style (Moved to bottom-left to avoid top UI conflict) */
+#theme-btn {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 10px 20px;
+    border-radius: 30px;
+    cursor: pointer;
+    backdrop-filter: blur(10px);
+    z-index: 4000;
+    /* Higher than most */
+    color: white;
+    transition: all 0.3s;
+    font-weight: 600;
+    font-family: 'Outfit', sans-serif;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+#theme-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.05) translateY(-5px);
+}
+
+/* Cute Mode Styles */
+body.cute-mode {
+    background: linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%) !important;
+    color: #2c3e50 !important;
+}
+
+/* Global text color for cute mode */
+body.cute-mode h1,
+body.cute-mode h2,
+body.cute-mode h3,
+body.cute-mode p,
+body.cute-mode div,
+body.cute-mode li,
+body.cute-mode span {
+    color: inherit;
+}
+
+body.cute-mode p {
+    opacity: 0.8 !important;
+}
+
+body.cute-mode #theme-btn {
+    background: #fff;
+    color: #ff69b4;
+    border: 2px solid #ffc1e3;
+    box-shadow: 0 5px 15px rgba(255, 105, 180, 0.3);
+}
+
+body.cute-mode .card {
+    background: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    box-shadow: 0 10px 25px rgba(161, 140, 209, 0.3);
+    color: #4a4a4a;
+    border-radius: 30px;
+}
+
+body.cute-mode .card:hover {
+    transform: translateY(-10px) rotate(-1deg);
+    background: #fff;
+    box-shadow: 0 15px 35px rgba(255, 154, 158, 0.4);
+}
+
+body.cute-mode .card h3 {
+    color: #ff69b4;
+}
+
+body.cute-mode .card p {
+    color: #666;
+}
+
+body.cute-mode h1 {
+    background: linear-gradient(to right, #ff69b4, #ff9a9e);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+body.cute-mode #rate-btn {
+    background: linear-gradient(135deg, #ff9a9e, #fecfef);
+}
+
+/* Enhanced Game UI for Cute Mode */
+body.cute-mode #ui {
+    pointer-events: none;
+}
+
+body.cute-mode .score,
+body.cute-mode .hint,
+body.cute-mode #leaderboard,
+body.cute-mode #score-board,
+body.cute-mode #riddle-box,
+body.cute-mode #login-overlay .content,
+body.cute-mode .modal-content {
+    background: rgba(255, 255, 255, 0.85) !important;
+    backdrop-filter: blur(15px) !important;
+    border: 3px solid #ffc1e3 !important;
+    border-radius: 20px !important;
+    padding: 15px 25px !important;
+    color: #5d4037 !important;
+    box-shadow: 0 10px 30px rgba(255, 182, 193, 0.4) !important;
+    pointer-events: auto;
+}
+
+/* Soccer specific score enhancement */
+body.cute-mode .score {
+    display: inline-flex !important;
+    gap: 20px !important;
+    margin-top: 10px;
+}
+
+body.cute-mode .score span {
+    background: #ffc1e3 !important;
+    color: white !important;
+    padding: 5px 15px !important;
+    border-radius: 12px !important;
+}
+
+body.cute-mode .msg.system {
+    color: #ff69b4 !important;
+    font-weight: 600;
+}
+
+body.cute-mode .msg.user {
+    color: #6a5acd !important;
+}
+
+body.cute-mode input,
+body.cute-mode textarea {
+    background: rgba(255, 255, 255, 0.6) !important;
+    border: 2px solid #ffc1e3 !important;
+    border-radius: 12px !important;
+    color: #5d4037 !important;
+}
+
+body.cute-mode input::placeholder,
+body.cute-mode textarea::placeholder {
+    color: #aaa;
+}
+
+body.cute-mode #ui a,
+body.cute-mode .back-link {
+    color: #ff69b4 !important;
+    opacity: 1 !important;
+    font-weight: 600;
+}
+
+body.cute-mode #boost-fill {
+    background: linear-gradient(90deg, #ff9a9e, #fad0c4) !important;
+}
+
+body.cute-mode #chat {
+    background: rgba(255, 255, 255, 0.6) !important;
+    border: 2px solid #ffc1e3;
+    border-radius: 15px;
+}
+
+/* Mobile Overrides */
+@media (max-width: 768px) {
+    #theme-btn {
+        bottom: 15px;
+        left: 15px;
+        padding: 8px 15px;
+        font-size: 0.8rem;
+    }
+
+    body.cute-mode #leaderboard,
+    body.cute-mode #score-board,
+    body.cute-mode #riddle-box,
+    body.cute-mode .score,
+    body.cute-mode .hint,
+    body.cute-mode .modal-content {
+        width: 90% !important;
+        margin: 5px auto;
+        font-size: 0.9rem !important;
+    }
+
+    body.cute-mode h1 {
+        font-size: 2rem !important;
+    }
+}
+
+/* Smooth Transition */
+body {
+    transition: background 0.6s cubic-bezier(0.4, 0, 0.2, 1),
+        color 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}

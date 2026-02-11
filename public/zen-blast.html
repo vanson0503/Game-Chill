@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zen Blast - Zen Arcade</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="theme.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        #game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            gap: 20px;
+        }
+
+        #board {
+            display: grid;
+            grid-template-columns: repeat(8, 45px);
+            grid-template-rows: repeat(8, 45px);
+            gap: 4px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 10px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .cell {
+            width: 45px;
+            height: 45px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+
+        .cell.filled {
+            box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.2);
+        }
+
+        #pieces-container {
+            display: flex;
+            gap: 20px;
+            height: 120px;
+            align-items: center;
+        }
+
+        .piece {
+            cursor: grab;
+            display: grid;
+            gap: 2px;
+            transition: transform 0.2s;
+        }
+
+        .piece:active {
+            cursor: grabbing;
+            transform: scale(1.1);
+        }
+
+        .p-cell {
+            width: 20px;
+            height: 20px;
+            border-radius: 3px;
+        }
+
+        #score-board {
+            font-size: 1.5rem;
+            font-weight: 300;
+            color: #fff;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 10px 30px;
+            border-radius: 30px;
+            backdrop-filter: blur(10px);
+        }
+    </style>
+</head>
+
+<body>
+    <div id="ui">
+        <a href="/"
+            style="pointer-events: auto; color: rgba(255,255,255,0.5); text-decoration: none; font-size: 0.9rem; margin-bottom: 10px; display: block;">←
+            Quay lại</a>
+        <h1>Zen Blast</h1>
+        <p>Cùng nhau lấp đầy bảng và xóa các hàng...</p>
+    </div>
+    <div id="game-container">
+        <div id="score-board">Điểm chung: <span id="score">0</span></div>
+        <div id="board"></div>
+        <div id="pieces-container"></div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="zen-blast.js"></script>
+    <script src="theme.js"></script>
+</body>
+
+</html>

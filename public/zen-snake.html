@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zen Snake - Zen Arcade</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="theme.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        #leaderboard {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            width: 200px;
+            z-index: 200;
+        }
+
+        .score-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+
+        #login-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(10, 10, 20, 0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .login-box {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 40px;
+            border-radius: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: center;
+        }
+
+        .color-options {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .color-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 3px solid transparent;
+            cursor: pointer;
+            transition: transform 0.2s, border-color 0.2s;
+        }
+
+        .color-btn.selected {
+            border-color: white;
+            transform: scale(1.1);
+        }
+
+        input {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 15px 20px;
+            border-radius: 15px;
+            color: white;
+            margin: 10px 0;
+            width: 250px;
+            outline: none;
+        }
+
+        button {
+            background: #fff;
+            color: #000;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        #boost-status {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 12px 20px;
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            z-index: 200;
+            font-size: 0.85rem;
+            min-width: 250px;
+            display: none;
+        }
+
+
+        #boost-bar {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
+            margin-top: 8px;
+            overflow: hidden;
+        }
+
+        #boost-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ff4444, #ff6b6b);
+            width: 0%;
+            transition: width 0.1s linear;
+        }
+
+        @media (max-width: 768px) {
+            #leaderboard {
+                top: 10px;
+                right: 10px;
+                width: 150px;
+                padding: 10px;
+                font-size: 0.8rem;
+            }
+
+            #leaderboard h3 {
+                font-size: 1rem;
+                margin-bottom: 8px;
+            }
+
+            .score-item {
+                margin-bottom: 4px;
+                font-size: 0.75rem;
+            }
+
+            /* Only show top 5 on mobile */
+            .score-item:nth-child(n+6) {
+                display: none;
+            }
+
+            #boost-status {
+                bottom: 15vh;
+                left: 50%;
+                transform: translateX(-50%);
+                min-width: 200px;
+                padding: 8px 15px;
+                font-size: 0.75rem;
+                white-space: nowrap;
+                background: rgba(0, 0, 0, 0.4);
+            }
+
+            .login-box {
+                width: 90%;
+                padding: 25px;
+            }
+
+            input {
+                width: 100%;
+                box-sizing: border-box;
+            }
+
+            h1 {
+                font-size: 1.2rem;
+                margin: 0;
+            }
+
+            .pc-only {
+                display: none;
+            }
+
+            #ui {
+                z-index: 300 !important;
+                top: 10px !important;
+                left: 10px !important;
+                width: auto;
+            }
+
+            #ui p,
+            #ui a {
+                display: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="login-overlay">
+        <div class="login-box">
+            <h2>Zen Snake</h2>
+            <input type="text" id="username" placeholder="Tên của bạn..." maxlength="10">
+
+            <div class="selection-row" style="display: flex; gap: 20px; margin: 25px 0; justify-content: center;">
+                <div class="selection-trigger" onclick="openPicker('flag')">
+                    <p
+                        style="font-size: 0.7rem; opacity: 0.6; margin-bottom: 8px; font-weight: 600; letter-spacing: 1px;">
+                        QUỐC GIA</p>
+                    <div id="flag-preview" class="preview-box"></div>
+                </div>
+                <div class="selection-trigger" onclick="openPicker('skin')">
+                    <p
+                        style="font-size: 0.7rem; opacity: 0.6; margin-bottom: 8px; font-weight: 600; letter-spacing: 1px;">
+                        NGOẠI HÌNH</p>
+                    <div id="skin-preview" class="preview-box"></div>
+                </div>
+            </div>
+
+            <button id="start-btn"
+                style="margin-top: 10px; width: 100%; height: 55px; font-size: 1.1rem; background: linear-gradient(135deg, #fff 0%, #eee 100%);">BẮT
+                ĐẦU SĂN MỒI 🐍</button>
+        </div>
+    </div>
+
+    <!-- Selection Picker Modal -->
+    <div id="picker-modal" class="picker-overlay">
+        <div class="picker-content">
+            <div class="picker-header">
+                <h3 id="picker-title">Chọn</h3>
+                <span class="close-picker" onclick="closePicker()">&times;</span>
+            </div>
+            <div id="picker-grid" class="picker-grid"></div>
+        </div>
+    </div>
+
+    <style>
+        .selection-trigger {
+            cursor: pointer;
+            transition: transform 0.2s;
+            text-align: center;
+        }
+
+        .selection-trigger:hover {
+            transform: translateY(-5px);
+        }
+
+        .preview-box {
+            width: 100px;
+            height: 100px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: border-color 0.3s, box-shadow 0.3s;
+            overflow: hidden;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .selection-trigger:hover .preview-box {
+            border-color: #ffffff;
+            box-shadow: 0 0 25px rgba(255, 255, 255, 0.2);
+        }
+
+        .picker-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(15px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+
+        .picker-content {
+            background: rgba(20, 20, 30, 0.95);
+            width: 90%;
+            max-width: 500px;
+            border-radius: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            animation: slideIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: scale(0.85);
+                opacity: 0;
+            }
+
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .picker-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .picker-header h3 {
+            font-size: 1.5rem;
+            letter-spacing: 1px;
+        }
+
+        .close-picker {
+            font-size: 2rem;
+            cursor: pointer;
+            opacity: 0.5;
+            transition: 0.2s;
+        }
+
+        .close-picker:hover {
+            opacity: 1;
+        }
+
+        .picker-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            max-height: 400px;
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+        .picker-grid::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        .picker-grid::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+        }
+
+        .picker-option {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid transparent;
+            border-radius: 15px;
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: 0.2s;
+            position: relative;
+            /* For checkmark */
+        }
+
+        .picker-option:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: scale(1.05);
+        }
+
+        .picker-option.selected {
+            border-color: #fff;
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .checkmark {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #4ecdc4;
+            color: #000;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            border: 2px solid #14141e;
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 10;
+        }
+
+        @keyframes popIn {
+            from {
+                transform: scale(0);
+            }
+
+            to {
+                transform: scale(1);
+            }
+        }
+
+        /* Flag specific in picker */
+        .flag-item img {
+            width: 80%;
+            border-radius: 4px;
+        }
+
+        .flag-item.emoji {
+            font-size: 2rem;
+        }
+
+        /* Skin specific in picker */
+        .skin-item {
+            width: 60%;
+            height: 60%;
+            border-radius: 50%;
+        }
+    </style>
+
+
+    <div id="ui">
+        <a href="/"
+            style="pointer-events: auto; color: rgba(255,255,255,0.5); text-decoration: none; font-size: 0.9rem; margin-bottom: 10px; display: block;">←
+            Quay lại</a>
+        <h1>Zen Snake</h1>
+        <p>Phối hợp cùng mọi người ăn mồi và đạt điểm cao!</p>
+    </div>
+
+    <div id="leaderboard">
+        <h3 style="margin-bottom: 15px;">Bảng xếp hạng</h3>
+        <div id="scores-list"></div>
+    </div>
+
+    <div id="boost-status">
+        <div>⚡ <span class="pc-only">SPACE / </span>CHẠM PHẢI để tăng tốc</div>
+        <div id="boost-bar">
+            <div id="boost-fill"></div>
+        </div>
+    </div>
+
+    <canvas id="gameCanvas"></canvas>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="zen-snake.js"></script>
+    <script src="theme.js"></script>
+</body>
+
+</html>

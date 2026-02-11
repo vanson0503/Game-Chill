@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Zen Pop - Bóp Bóng Cùng Bạn Bè</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="theme.css">
+    <style>
+        body {
+            overflow: hidden;
+            margin: 0;
+            background: #0a0a14;
+            color: white;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        canvas {
+            display: block;
+        }
+
+        #ui {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 100;
+            pointer-events: none;
+        }
+
+        .score {
+            font-size: 2rem;
+            font-weight: 600;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .hint {
+            font-size: 1rem;
+            opacity: 0.7;
+        }
+
+        .back-link {
+            position: fixed;
+            top: 20px;
+            right: 80px;
+            color: white;
+            text-decoration: none;
+            z-index: 100;
+            font-weight: 600;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="ui">
+        <div class="score">Điểm chung: <span id="score-val">0</span></div>
+        <div class="hint">Chạm vào bóng để bóp nát chúng! 🎈</div>
+    </div>
+    <a href="/" class="back-link">← Quay lại</a>
+    <div id="theme-btn" onclick="toggleTheme()">🌙 Zen Mode</div>
+    <canvas id="gameCanvas"></canvas>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="theme.js"></script>
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const scoreVal = document.getElementById('score-val');
+        const socket = io('/pop');
+
+        let balloons = [];
+        let score = 0;
+
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        socket.on('init', (data) => {
+            score = data.score;
+            balloons = data.balloons;
+            scoreVal.innerText = score;
+        });
+
+        socket.on('update', (data) => {
+            balloons = data;
+        });
+
+        socket.on('popped', (data) => {
+            score = data.score;
+            scoreVal.innerText = score;
+            // Visual effect could go here
+        });
+
+        canvas.addEventListener('mousedown', (e) => {
+            const x = (e.clientX / canvas.width) * 100;
+            const y = (e.clientY / canvas.height) * 100;
+
+            balloons.forEach(b => {
+                const bx = (b.x / 100) * canvas.width;
+                const by = (b.y / 100) * canvas.height;
+                const dist = Math.sqrt((e.clientX - bx) ** 2 + (e.clientY - by) ** 2);
+                if (dist < b.size) {
+                    socket.emit('pop', b.id);
+                }
+            });
+        });
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            balloons.forEach(b => {
+                const bx = (b.x / 100) * canvas.width;
+                const by = (b.y / 100) * canvas.height;
+
+                ctx.save();
+                ctx.beginPath();
+                ctx.arc(bx, by, b.size, 0, Math.PI * 2);
+                ctx.fillStyle = b.color;
+                ctx.globalAlpha = 0.8;
+                ctx.fill();
+
+                // Highlight
+                ctx.beginPath();
+                ctx.arc(bx - b.size / 3, by - b.size / 3, b.size / 4, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(255,255,255,0.3)';
+                ctx.fill();
+
+                // String
+                ctx.beginPath();
+                ctx.moveTo(bx, by + b.size);
+                ctx.lineTo(bx, by + b.size * 2);
+                ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+                ctx.stroke();
+                ctx.restore();
+            });
+
+            requestAnimationFrame(draw);
+        }
+        draw();
+    </script>
+</body>
+
+</html>

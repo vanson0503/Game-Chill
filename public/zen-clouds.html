@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Zen Clouds - Nhảy Trên Mây</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="theme.css">
+    <style>
+        body {
+            margin: 0;
+            background: #87CEEB;
+            font-family: 'Outfit', sans-serif;
+            overflow: hidden;
+        }
+
+        #sky {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            background: linear-gradient(180deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        .cloud {
+            position: absolute;
+            background: white;
+            border-radius: 50px;
+            opacity: 0.8;
+            box-shadow: 0 10px 30px rgba(255, 255, 255, 0.3);
+        }
+
+        .player {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            transition: all 0.1s linear;
+        }
+
+        #ui {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            pointer-events: none;
+            color: white;
+        }
+
+        .back-link {
+            position: fixed;
+            top: 20px;
+            right: 80px;
+            color: white;
+            text-decoration: none;
+            z-index: 100;
+            font-weight: 600;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="sky">
+        <div id="ui">
+            <h1 style="margin:0;">Zen Clouds</h1>
+            <p>Di chuyển chuột để bay lượn cùng mọi người trên bầu trời ☁️</p>
+        </div>
+        <a href="/" class="back-link">← Quay lại</a>
+        <div id="theme-btn" onclick="toggleTheme()">🌙 Zen Mode</div>
+        <div id="players-container"></div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="theme.js"></script>
+    <script>
+        const socket = io('/clouds');
+        const container = document.getElementById('players-container');
+        const players = {};
+
+        // Generate static clouds for background
+        for (let i = 0; i < 15; i++) {
+            const c = document.createElement('div');
+            c.className = 'cloud';
+            c.style.width = (100 + Math.random() * 200) + 'px';
+            c.style.height = (40 + Math.random() * 60) + 'px';
+            c.style.left = Math.random() * 100 + 'vw';
+            c.style.top = Math.random() * 100 + 'vh';
+            document.getElementById('sky').appendChild(c);
+        }
+
+        window.addEventListener('mousemove', (e) => {
+            socket.emit('move', { x: e.clientX, y: e.clientY });
+            if (players[socket.id]) {
+                updatePlayerEl(socket.id, e.clientX, e.clientY);
+            }
+        });
+
+        socket.on('init', (data) => {
+            Object.keys(data).forEach(id => {
+                createPlayerEl(id, data[id]);
+            });
+        });
+
+        socket.on('updatePlayer', (data) => {
+            if (!players[data.id]) createPlayerEl(data.id, data);
+            updatePlayerEl(data.id, data.x, data.y);
+        });
+
+        socket.on('removePlayer', (id) => {
+            if (players[id]) {
+                players[id].remove();
+                delete players[id];
+            }
+        });
+
+        function createPlayerEl(id, data) {
+            const div = document.createElement('div');
+            div.className = 'player';
+            div.style.backgroundColor = data.color;
+            div.style.boxShadow = `0 0 20px ${data.color}`;
+            container.appendChild(div);
+            players[id] = div;
+            updatePlayerEl(id, data.x, data.y);
+        }
+
+        function updatePlayerEl(id, x, y) {
+            if (players[id]) {
+                players[id].style.left = (x - 15) + 'px';
+                players[id].style.top = (y - 15) + 'px';
+            }
+        }
+    </script>
+</body>
+
+</html>

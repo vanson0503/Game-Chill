@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Zen Fishing - Câu Cá Mini Game</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="theme.css">
+    <style>
+        body {
+            overflow: hidden;
+            margin: 0;
+            background: #001f3f;
+            color: white;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        #sea {
+            background: linear-gradient(to bottom, #4facfe, #001f3f);
+            height: 100vh;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #ui {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 100;
+            pointer-events: none;
+        }
+
+        .total-kg {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #fff;
+            text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Login Overlay */
+        #login-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .login-box {
+            background: white;
+            padding: 40px;
+            border-radius: 30px;
+            text-align: center;
+            color: #333;
+            width: 350px;
+        }
+
+        .login-box h2 {
+            margin-bottom: 20px;
+            color: #0074D9;
+        }
+
+        .login-box input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 20px;
+            border: 2px solid #eee;
+            border-radius: 10px;
+            font-size: 1rem;
+        }
+
+        .login-box button {
+            background: #0074D9;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        /* Fishing Mechanics */
+        .player-seat {
+            position: absolute;
+            text-align: center;
+            color: white;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .rod-visual {
+            position: absolute;
+            height: 100px;
+            width: 4px;
+            background: #5d4037;
+            transform-origin: top center;
+            border-radius: 2px;
+        }
+
+        .fishing-line {
+            position: absolute;
+            width: 1px;
+            background: rgba(255, 255, 255, 0.4);
+            transform-origin: top center;
+        }
+
+        .fish {
+            position: absolute;
+            cursor: pointer;
+            font-size: 30px;
+            transition: transform 0.5s;
+            z-index: 10;
+        }
+
+        .bobber {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: red;
+            border-radius: 50%;
+            z-index: 5;
+        }
+
+        /* Struggle Mini-game */
+        #struggle-ui {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            z-index: 5000;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 30px;
+            border-radius: 30px;
+            border: 2px solid #ff9a9e;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 0 50px rgba(255, 154, 158, 0.3);
+            width: 300px;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        #struggle-ui.active {
+            display: flex;
+        }
+
+        .progress-container {
+            width: 100%;
+            height: 25px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            overflow: hidden;
+            border: 2px solid white;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+        }
+
+        #progress-bar {
+            width: 0%;
+            height: 100%;
+            background: linear-gradient(90deg, #ff1493, #ff69b4, #ffb6c1);
+            transition: width 0.1s;
+        }
+
+        .tap-btn {
+            background: #fff;
+            color: #ff1493;
+            font-weight: 800;
+            padding: 15px 50px;
+            border-radius: 50px;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
+            font-size: 1.5rem;
+            width: 100%;
+            transition: transform 0.1s, box-shadow 0.1s;
+        }
+
+        .tap-btn:active {
+            transform: scale(0.95);
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.4);
+        }
+
+        .ripple-visual {
+            position: fixed;
+            border: 3px solid rgba(255, 255, 255, 0.8);
+            border-radius: 50%;
+            pointer-events: none;
+            animation: ripple-out 0.8s ease-out forwards;
+            z-index: 5;
+        }
+
+        @keyframes ripple-out {
+            0% {
+                transform: scale(0.5);
+                opacity: 1;
+            }
+
+            100% {
+                transform: scale(3);
+                opacity: 0;
+            }
+        }
+
+        #log {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            max-height: 150px;
+            overflow: hidden;
+            text-align: right;
+            opacity: 0.8;
+            font-size: 0.8rem;
+        }
+
+        .back-link {
+            position: fixed;
+            top: 20px;
+            right: 80px;
+            color: white;
+            text-decoration: none;
+            z-index: 100;
+        }
+
+        @keyframes ripple-effect {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+
+            100% {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="login-overlay">
+        <div class="login-box">
+            <h2>Nhập Tên Ngư Dân</h2>
+            <input type="text" id="username" placeholder="Tên của bạn..." maxlength="12">
+            <button onclick="joinGame()">BẮT ĐẦU CÂU</button>
+        </div>
+    </div>
+
+    <div id="sea">
+        <div id="ui">
+            <div class="total-kg">Thành quả chung: <span id="total-val">0</span> kg</div>
+            <div id="status" style="opacity: 0.8;">Nhấp vào mặt nước để quăng cần! 🎣</div>
+        </div>
+        <a href="/" class="back-link">← Quay lại</a>
+        <div id="theme-btn" onclick="toggleTheme()">🌙 Zen Mode</div>
+        <div id="log"></div>
+        <div id="players-container"></div>
+        <div id="fish-container"></div>
+
+        <div id="struggle-ui">
+            <div style="font-size: 1.2rem; margin-bottom: 10px; font-weight: bold;">CÁ ĐÃ CẮN CÂU! GIẬT LIÊN TỤC!</div>
+            <div class="progress-container">
+                <div id="progress-bar"></div>
+            </div>
+            <button class="tap-btn" id="tap-btn">GIẬT!!!</button>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="theme.js"></script>
+    <script>
+        const socket = io('/fishing');
+        const sea = document.getElementById('sea');
+        const fishContainer = document.getElementById('fish-container');
+        const playersContainer = document.getElementById('players-container');
+        const struggleUI = document.getElementById('struggle-ui');
+        const progressBar = document.getElementById('progress-bar');
+        const statusText = document.getElementById('status');
+        const totalVal = document.getElementById('total-val');
+        const logContainer = document.getElementById('log');
+
+        let myId, mySeat, players = {}, fishPool = [];
+        let currentState = 'idle'; // idle, casting, hooked
+        let currentFish = null;
+        let catchProgress = 0;
+
+        function joinGame() {
+            const name = document.getElementById('username').value.trim();
+            if (!name) return alert("Vui lòng nhập tên!");
+            document.getElementById('login-overlay').style.display = 'none';
+            socket.emit('join', name);
+        }
+
+        socket.on('init', (data) => {
+            myId = data.myId;
+            totalVal.innerText = data.totalKg.toFixed(1);
+            players = data.players;
+            mySeat = players[myId];
+            Object.values(players).forEach(drawPlayer);
+            updateFish(data.fish);
+        });
+
+        socket.on('playerJoined', (p) => {
+            players[p.id] = p;
+            drawPlayer(p);
+        });
+
+        socket.on('playerUpdate', (p) => {
+            players[p.id] = p;
+            if (p.id === myId) mySeat = p; // Quan trọng: Cập nhật biến local để nhận biết đang câu
+            updateRod(p);
+        });
+
+        socket.on('playerLeft', (id) => {
+            if (document.getElementById('p-' + id)) document.getElementById('p-' + id).remove();
+            delete players[id];
+        });
+
+        socket.on('update', (fish) => {
+            fishPool = fish;
+            renderFish();
+        });
+
+        socket.on('caught', (data) => {
+            totalVal.innerText = data.totalKg.toFixed(1);
+            const msg = `🎉 ${data.user} vừa câu được cá ${data.type} (${data.weight.toFixed(1)}kg)!`;
+            const div = document.createElement('div');
+            div.innerText = msg;
+            logContainer.prepend(div);
+            if (logContainer.children.length > 5) logContainer.lastChild.remove();
+
+            // Nếu là mình câu được, reset trạng thái
+            if (data.id === myId) resetFishing();
+        });
+
+        sea.addEventListener('click', (e) => {
+            if (currentState !== 'idle') return;
+            // Chỉ cho phép quăng cần ở vùng mặt nước (phía trên ngư dân)
+            if (e.clientY > window.innerHeight - 150) return;
+
+            // Hiệu ứng vòng tròn khi chạm mặt nước
+            const ripple = document.createElement('div');
+            ripple.className = 'ripple-visual';
+            ripple.style.left = (e.clientX - 20) + 'px';
+            ripple.style.top = (e.clientY - 20) + 'px';
+            ripple.style.width = '40px';
+            ripple.style.height = '40px';
+            document.body.appendChild(ripple);
+            setTimeout(() => ripple.remove(), 800);
+
+            currentState = 'casting';
+            if (mySeat) {
+                mySeat.state = 'casting';
+                mySeat.target = { x: e.clientX, y: e.clientY };
+                updateRod(mySeat);
+            }
+            statusText.innerText = "Đã thả mồi! Cá sắp cắn rồi... 🌊";
+            socket.emit('cast', { x: e.clientX, y: e.clientY });
+        });
+
+        function drawPlayer(p) {
+            if (document.getElementById('p-' + p.id)) document.getElementById('p-' + p.id).remove();
+            const div = document.createElement('div');
+            div.id = 'p-' + p.id;
+            div.className = 'player-seat';
+
+            const responsiveY = window.innerHeight - 80;
+            div.style.left = p.pos.x + 'px';
+            div.style.top = responsiveY + 'px';
+
+            div.innerHTML = `<div style="font-size: 2.5rem;">🧘‍♂️</div><div style="background: rgba(0,0,0,0.4); border-radius: 5px; padding: 2px;">${p.name}</div><div class="rod-visual"></div>`;
+            playersContainer.appendChild(div);
+
+            p.pos.y = responsiveY;
+            updateRod(p);
+        }
+
+        function updateRod(p) {
+            const el = document.getElementById('p-' + p.id);
+            if (!el) return;
+            const rod = el.querySelector('.rod-visual');
+            const oldLine = el.querySelector('.fishing-line');
+            if (oldLine) oldLine.remove();
+            const oldBobber = el.querySelector('.bobber');
+            if (oldBobber) oldBobber.remove();
+
+            if (p.state === 'casting' && p.target) {
+                const dx = p.target.x - (p.pos.x + 15);
+                const dy = p.target.y - p.pos.y;
+                const angle = Math.atan2(dy, dx);
+                rod.style.height = '120px';
+                rod.style.transform = `rotate(${angle + Math.PI / 2}rad)`;
+
+                const line = document.createElement('div');
+                line.className = 'fishing-line';
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                line.style.height = dist + 'px';
+                line.style.left = '20px';
+                line.style.top = '0px';
+                line.style.transform = `rotate(${angle - Math.PI / 2}rad)`;
+                el.appendChild(line);
+
+                const bob = document.createElement('div');
+                bob.className = 'bobber';
+                bob.style.left = (p.target.x - p.pos.x + 15) + 'px';
+                bob.style.top = (p.target.y - p.pos.y) + 'px';
+                el.appendChild(bob);
+            } else {
+                rod.style.transform = 'rotate(-30deg)';
+                rod.style.height = '80px';
+            }
+        }
+
+        function renderFish() {
+            fishContainer.innerHTML = '';
+            fishPool.forEach(f => {
+                const div = document.createElement('div');
+                div.className = 'fish';
+                div.style.left = f.x + 'px';
+                div.style.top = f.y + 'px';
+                div.style.fontSize = (25 + f.weight * 3) + 'px';
+                div.innerText = f.icon;
+
+                div.style.transform = `scaleX(${f.speed > 0 ? 1 : -1})`;
+
+                if (currentState === 'casting' && mySeat && mySeat.target) {
+                    const dx = mySeat.target.x - f.x;
+                    const dy = mySeat.target.y - f.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+
+                    if (dist < 150) {
+                        f.x += dx * 0.05;
+                        f.y += dy * 0.05;
+                    }
+
+                    if (dist < 65) {
+                        startStruggle(f);
+                    }
+                }
+                fishContainer.appendChild(div);
+            });
+        }
+
+        function startStruggle(f) {
+            currentState = 'hooked';
+            currentFish = f;
+            struggleUI.classList.add('active');
+            catchProgress = 0;
+            progressBar.style.width = '0%';
+            statusText.innerText = "CÁ ĐỚP RỒI! GIẬT LIÊN TỤC!!! 🎣🔥";
+        }
+
+        document.getElementById('tap-btn').onclick = (e) => {
+            e.stopPropagation();
+            if (currentState !== 'hooked') return;
+
+            const jump = 15 / (1 + currentFish.weight * 0.2);
+            catchProgress += jump;
+            progressBar.style.width = catchProgress + '%';
+
+            if (catchProgress >= 100) {
+                socket.emit('catch', {
+                    fishId: currentFish.id,
+                    weight: currentFish.weight,
+                    type: currentFish.type
+                });
+                struggleUI.classList.remove('active');
+            }
+        };
+
+        // Progress decay
+        setInterval(() => {
+            if (currentState === 'hooked') {
+                catchProgress = Math.max(0, catchProgress - 1.5);
+                progressBar.style.width = catchProgress + '%';
+            }
+        }, 100);
+
+        function resetFishing() {
+            currentState = 'idle';
+            currentFish = null;
+            struggleUI.classList.remove('active');
+            statusText.innerText = "Nhấp vào mặt nước để quăng cần! 🎣";
+            if (mySeat) {
+                mySeat.state = 'idle';
+                updateRod(mySeat);
+            }
+        }
+
+        function updateFish(fish) {
+            fishPool = fish;
+            renderFish();
+        }
+    </script>
+</body>
+
+</html>
